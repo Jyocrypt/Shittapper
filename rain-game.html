@@ -69,6 +69,17 @@
             font-size: 18px;
             cursor: pointer;
         }
+        #timer {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -85,6 +96,8 @@
             <button id="close-modal">Close</button>
         </div>
     </div>
+
+    <div id="timer">30</div> <!-- Timer Element -->
 
     <script>
         const TAP_GAME_DURATION = 30000; // 30 seconds
@@ -110,12 +123,13 @@
         const gameContainer = document.getElementById('game-container');
         const modalContainer = document.getElementById('modal-container');
         const closeModalButton = document.getElementById('close-modal');
+        const timerDisplay = document.getElementById('timer'); // Timer element
 
         function updateDisplays() {
             timeLeftDisplay.textContent = `Time left: ${timeLeft / 1000}s`;
             balanceDisplay.textContent = `Balance: ${balance}`;
             highScoreDisplay.textContent = `High Score: ${highScore}`;
-            barFill.style.width = `${(barCoins / BAR_COIN_LIMIT) * 100}%`;
+            if (barFill) barFill.style.width = `${(barCoins / BAR_COIN_LIMIT) * 100}%`;
         }
 
         function startGame() {
@@ -128,12 +142,22 @@
             modalContainer.style.display = 'none';
             updateDisplays();
 
+            // Update the timer display
+            timerDisplay.textContent = timeLeft / 1000; // Set initial time to 30
+
             gameInterval = setInterval(() => {
                 timeLeft -= 100;
                 barCoins = Math.min(BAR_COIN_LIMIT, barCoins + 1);
+
+                // Update the timer display every second
+                if (timeLeft % 1000 === 0) {
+                    timerDisplay.textContent = timeLeft / 1000;
+                }
+
                 if (timeLeft % 1000 === 0) {
                     createFallingCoin();
                 }
+
                 updateDisplays();
                 if (timeLeft <= 0) {
                     endGame();
@@ -146,6 +170,10 @@
             clearInterval(gameInterval);
             startButton.style.display = 'block';
             modalContainer.style.display = 'flex';
+            
+            // Reset the timer display to 30
+            timerDisplay.textContent = 30;
+            
             if (balance > highScore) {
                 highScore = balance;
                 localStorage.setItem('highScore', highScore);
@@ -164,40 +192,38 @@
         }
 
         function createFallingCoin() {
-    const fallingCoin = document.createElement('img');
-    fallingCoin.src = 'fig.png'; // Replace with actual fig image
-    fallingCoin.alt = 'Falling coin';
-    fallingCoin.className = 'falling-coin';
-    fallingCoin.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
-    fallingCoin.style.top = '-50px';
-    
-    fallingCoin.onclick = () => {
-        if (gameActive) {
-            balance += FALLING_COIN_VALUE;
-            updateDisplays();
-            fallingCoin.remove(); // Remove coin once clicked
+            const fallingCoin = document.createElement('img');
+            fallingCoin.src = 'fig.png'; // Replace with actual fig image
+            fallingCoin.alt = 'Falling coin';
+            fallingCoin.className = 'falling-coin';
+            fallingCoin.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+            fallingCoin.style.top = '-50px';
+            
+            fallingCoin.onclick = () => {
+                if (gameActive) {
+                    balance += FALLING_COIN_VALUE;
+                    updateDisplays();
+                    fallingCoin.remove(); // Remove coin once clicked
+                }
+            };
+            
+            gameContainer.appendChild(fallingCoin);
+            fallingCoins.push(fallingCoin); // Add the coin to the array to track them
+            
+            let position = -50;
+            const fallingInterval = setInterval(() => {
+                if (position >= window.innerHeight) {
+                    clearInterval(fallingInterval);
+                    fallingCoin.remove(); // Remove coin if it goes off-screen
+                } else {
+                    position += 5;
+                    fallingCoin.style.top = `${position}px`;
+                }
+            }, 50);
         }
-    };
-    
-    gameContainer.appendChild(fallingCoin);
-    fallingCoins.push(fallingCoin); // Add the coin to the array to track them
-    
-    let position = -50;
-    const fallingInterval = setInterval(() => {
-        if (position >= window.innerHeight) {
-            clearInterval(fallingInterval);
-            fallingCoin.remove(); // Remove coin if it goes off-screen
-        } else {
-            position += 5;
-            fallingCoin.style.top = `${position}px`;
-        }
-    }, 50);
-}
-        
-        startButton.onclick = startGame;
-        coin.onclick = handleTap;
-        closeModalButton.onclick = () => modalContainer.style.display = 'none';
 
+        startButton.onclick = startGame;
+        closeModalButton.onclick = () => modalContainer.style.display = 'none';
         updateDisplays();
     </script>
 </body>
