@@ -164,34 +164,36 @@
         }
 
         function createFallingCoin() {
-            const fallingCoin = document.createElement('img');
-            fallingCoin.src = 'fig.png'; // Replace with actual fig image
-            fallingCoin.alt = 'Falling coin';
-            fallingCoin.className = 'falling-coin';
-            fallingCoin.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
-            fallingCoin.style.top = '-50px';
-            fallingCoin.onclick = () => {
-                if (gameActive) {
-                    balance += FALLING_COIN_VALUE;
-                    updateDisplays();
-                    fallingCoin.remove();
-                }
-            };
-            gameContainer.appendChild(fallingCoin);
-            fallingCoins.push(fallingCoin);
-
-            let position = -50;
-            const fallingInterval = setInterval(() => {
-                if (position >= window.innerHeight) {
-                    clearInterval(fallingInterval);
-                    fallingCoin.remove();
-                } else {
-                    position += 5;
-                    fallingCoin.style.top = `${position}px`;
-                }
-            }, 50);
+    const fallingCoin = document.createElement('img');
+    fallingCoin.src = 'fig.png'; // Replace with actual fig image
+    fallingCoin.alt = 'Falling coin';
+    fallingCoin.className = 'falling-coin';
+    fallingCoin.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+    fallingCoin.style.top = '-50px';
+    
+    fallingCoin.onclick = () => {
+        if (gameActive) {
+            balance += FALLING_COIN_VALUE;
+            updateDisplays();
+            fallingCoin.remove(); // Remove coin once clicked
         }
-
+    };
+    
+    gameContainer.appendChild(fallingCoin);
+    fallingCoins.push(fallingCoin); // Add the coin to the array to track them
+    
+    let position = -50;
+    const fallingInterval = setInterval(() => {
+        if (position >= window.innerHeight) {
+            clearInterval(fallingInterval);
+            fallingCoin.remove(); // Remove coin if it goes off-screen
+        } else {
+            position += 5;
+            fallingCoin.style.top = `${position}px`;
+        }
+    }, 50);
+}
+        
         startButton.onclick = startGame;
         coin.onclick = handleTap;
         closeModalButton.onclick = () => modalContainer.style.display = 'none';
